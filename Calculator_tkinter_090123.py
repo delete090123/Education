@@ -1,10 +1,11 @@
 # Calculator tkinter
 
 import tkinter as tk
+from tkinter import messagebox
 
 def add_digit(digit):
     value = calc.get()
-    if value[0] == '0' and len(value) ==1:
+    if value[0] == '0' and len(value) == 1:
         value = value[1:]
     calc.delete(0, tk.END)
     calc.insert(0, value+digit)
@@ -25,8 +26,14 @@ def calculate():
         value = value + value[:-1]
 
     calc.delete(0, tk.END)
-    calc.insert(0, eval(value))
-
+    try:
+        calc.insert(0, eval(value))
+    except (NameError, SyntaxError):
+        messagebox.showinfo('Caution','Enter only numbers')
+        calc.insert(0, 0)
+    except ZeroDivisionError:
+        messagebox.showinfo('Caution', 'Not divide 0')
+        calc.insert(0, 0)
 def clear():
     calc.delete(0, tk.END)
     calc.insert(0, 0)
@@ -46,13 +53,25 @@ def make_clear_button(operation):
     return tk.Button(text=operation, bd=5, font=('Arial', 13), fg='red',
                      command=clear)
 
+def press_key(event):
+    print(repr(event.char))
+    if event.char.isdigit():
+        add_digit(event.char)
+    elif event.char in '+-*/':
+        add_operation(event.char)
+    elif event.char == '\r':
+        calculate()
+
 win = tk.Tk()
 win.geometry(f"240x275+100+100")
 win['bg'] = '#33ffe6'
 win.title('Calculator')
 
+win.bind('<Key>', press_key)
+
 calc = tk.Entry(win, justify=tk.RIGHT, font=('Arial', 15), width=15)
 calc.insert(0, '0')
+
 calc.grid(row=0, column=0, columnspan=4, stick='we', padx=5, pady=5)
 
 make_digit_button('1').grid(row=1, column=0, stick = 'wens', padx=5, pady=5)
